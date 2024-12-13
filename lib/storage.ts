@@ -34,6 +34,8 @@ export function loadFromStorage(): StorageState {
       internalLinks: [],
       currentStep: "initial",
       initialPrompt: "",
+      editedBlocks: [],
+      editedTitle: "",
     };
   }
 
@@ -46,6 +48,8 @@ export function loadFromStorage(): StorageState {
     internalLinks: [],
     currentStep: "initial",
     initialPrompt: "",
+    editedBlocks: [],
+    editedTitle: "",
   };
 
   return JSON.parse(saved);
