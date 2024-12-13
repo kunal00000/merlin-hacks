@@ -1,32 +1,21 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Share2 } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 
 interface BlogHeaderProps {
-  previewMode: "preview" | "structure";
-  setPreviewMode: (mode: "preview" | "structure") => void;
+  previewMode: string
+  setPreviewMode: (value: string) => void;
 }
 
 export function BlogHeader({ previewMode, setPreviewMode }: BlogHeaderProps) {
   return (
-    <header className="p-4 border-b border-border flex items-center justify-between">
-      <div className="flex gap-2">
-        <Button
-          variant={previewMode === "preview" ? "default" : "ghost"}
-          size="sm"
-          onClick={() => setPreviewMode("preview")}
-        >
-          Preview
-        </Button>
-        <Button
-          variant={previewMode === "structure" ? "default" : "ghost"}
-          size="sm"
-          onClick={() => setPreviewMode("structure")}
-        >
-          Structure
-        </Button>
-      </div>
+    <header className="p-2.5 border-b border-border flex items-center justify-between">
+      <Tabs value={previewMode} onValueChange={setPreviewMode} className="w-56 rounded-full ml-auto">
+      <TabsList className="grid w-full grid-cols-2 rounded-full">
+        <TabsTrigger value={"preview"} className="rounded-full">Preview</TabsTrigger>
+        <TabsTrigger value={"structure"} className="rounded-full">Structure</TabsTrigger>
+      </TabsList>
+    </Tabs>
     </header>
   );
 }

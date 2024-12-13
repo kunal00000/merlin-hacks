@@ -39,7 +39,7 @@ export interface GenerateResponse {
   error?: string;
 }
 
-export interface TBlogBlock {
+export type TBlogBlock = {
   id: string;
   name: string;
   icon: LucideIcon;

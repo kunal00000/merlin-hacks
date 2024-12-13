@@ -14,7 +14,7 @@ export default function Home() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [blogBlocks, setBlogBlocks] = useState<BlogBlock[]>([]);
-  const [previewMode, setPreviewMode] = useState<"preview" | "structure">("structure");
+  const [previewMode, setPreviewMode] = useState<string>("structure");
   const [blogTitle, setBlogTitle] = useState("");
 
   const handleSendMessage = () => {
