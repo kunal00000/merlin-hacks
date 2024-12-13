@@ -16,6 +16,29 @@ import {
   LucideIcon,
 } from 'lucide-react';
 
+export interface GenerateRequest {
+  userMessage: string;
+  blogType: string;
+  internalLinks: string[];
+  selectedBlocks: BlogBlock[];
+}
+
+export interface GenerateResponse {
+  title: string;
+  slug: string;
+  blocks: Array<{
+    type: string;
+    content: string;
+    imageUrl?: string;
+    id?: string;
+  }>;
+  metadata: {
+    keywords: string[];
+    description: string;
+    readingTime: number;
+  };
+}
+
 export interface BlogBlock {
   id: string;
   type: string;

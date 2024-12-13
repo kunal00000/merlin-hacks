@@ -8,7 +8,7 @@ import { ChatInput } from "@/components/chat/chat-input";
 import { BlogHeader } from "@/components/blog/blog-header";
 import { BlogPreview } from "@/components/blog/blog-preview";
 import { BlogStructure } from "@/components/blog/blog-structure";
-import { Message, BlogBlock } from "@/lib/types";
+import { Message, BlogBlock, GenerateResponse, TBlogBlock, blocks as availableBlocks } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { BlogTypeSelector } from "@/components/chat/blog-type-selector";
 import { MultiInput } from "@/components/chat/multi-input";
@@ -22,6 +22,7 @@ export default function Home() {
   const [currentInput, setCurrentInput] = useState("");
   const [blogBlocks, setBlogBlocks] = useState<BlogBlock[]>([]);
   const [editedBlocks, setEditedBlocks] = useState<BlogBlock[]>([]);
+  const [selectedBlockTypes, setSelectedBlockTypes] = useState<TBlogBlock[]>([]);
   const [previewMode, setPreviewMode] = useState<string>("structure");
   const [blogTitle, setBlogTitle] = useState("");
   const [editedTitle, setEditedTitle] = useState("");
@@ -33,7 +34,6 @@ export default function Home() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { toast } = useToast();
 
-  // Load saved state on initial render
   useEffect(() => {
     const savedState = loadFromStorage();
     setMessages(savedState.messages);
@@ -45,9 +45,14 @@ export default function Home() {
     setInternalLinks(savedState.internalLinks);
     setCurrentStep(savedState.currentStep as Step);
     setInitialPrompt(savedState.initialPrompt);
+    
+    // Reconstruct selectedBlockTypes from saved blocks
+    const savedBlockTypes = savedState.blogBlocks.map(block => 
+      availableBlocks.find(b => b.id === block.type)
+    ).filter((b): b is TBlogBlock => b !== undefined);
+    setSelectedBlockTypes(savedBlockTypes);
   }, []);
 
-  // Save state changes to localStorage
   useEffect(() => {
     saveToStorage({
       messages,
@@ -118,35 +123,57 @@ export default function Home() {
     setCurrentStep('generating');
     addMessage('user', "Generate blog with the selected structure");
 
-    // Simulate AI processing
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userMessage: initialPrompt,
+          blogType: selectedBlogType,
+          internalLinks,
+          selectedBlocks: selectedBlockTypes 
+        }),
+      });
 
-    // Generate content for each block
-    const generatedBlocks = blogBlocks.map(block => ({
-      ...block,
-      content: `Generated content for ${block.type}...`
-    }));
+      if (!response.ok) {
+        console.log(await response.json())
+        throw new Error('Failed to generate blog content');
+      }
 
-    setBlogBlocks(generatedBlocks);
-    setEditedBlocks(generatedBlocks);
-    setPreviewMode("preview");
-    
-    addMessage('assistant', "I've generated your blog content based on the structure you provided. You can view and edit it in the preview section.");
-    setIsLoading(false);
-  };
+      const data: GenerateResponse = await response.json();
 
-  const handleSendMessage = async (message: string) => {
-    if (isLoading) return;
+      setBlogTitle(data.title);
+      setEditedTitle(data.title);
 
-    switch (currentStep) {
-      case 'initial':
-        await handleInitialMessage(message);
-        break;
-      default:
-        addMessage('user', message);
-        break;
+      const generatedBlocks = data.blocks.map((block, index) => ({
+        ...block,
+        id: block.id || `${block.type}-${index}`,
+      }));
+
+      setBlogBlocks(generatedBlocks);
+      setEditedBlocks(generatedBlocks);
+      setPreviewMode("preview");
+      
+      addMessage('assistant', "I've generated your blog content based on your requirements. You can view and edit it in the preview section.");
+
+      toast({
+        title: "Blog Generated Successfully",
+        description: `Reading time: ${data.metadata.readingTime} minutes`,
+      });
+
+    } catch (error) {
+      console.error('Error generating blog:', error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate blog content. Please try again.",
+        variant: "destructive"
+      });
+      addMessage('assistant', "Sorry, I encountered an error while generating the blog content. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
-    setCurrentInput("");
   };
 
   const handleSaveContent = () => {
@@ -174,7 +201,7 @@ export default function Home() {
           <ChatInput
             message={currentInput}
             setMessage={setCurrentInput}
-            onSend={handleSendMessage}
+            onSend={handleInitialMessage}
             disabled={isLoading}
             showControls={true}
           />
@@ -268,17 +295,27 @@ export default function Home() {
             <BlogStructure
               blocks={blogBlocks}
               onAddBlock={(blockType) => {
-                const newBlock = { 
-                  id: Math.random().toString(), 
-                  type: blockType, 
-                  content: "" 
-                };
-                setBlogBlocks(prev => [...prev, newBlock]);
-                setEditedBlocks(prev => [...prev, newBlock]);
+                const selectedBlockType = availableBlocks.find(b => b.id === blockType);
+                if (selectedBlockType) {
+                  const newBlock = { 
+                    id: Math.random().toString(), 
+                    type: blockType, 
+                    content: "" 
+                  };
+                  setBlogBlocks(prev => [...prev, newBlock]);
+                  setEditedBlocks(prev => [...prev, newBlock]);
+                  setSelectedBlockTypes(prev => [...prev, selectedBlockType]);
+                }
               }}
               onRemoveBlock={(blockId) => {
-                setBlogBlocks(blocks => blocks.filter(block => block.id !== blockId));
-                setEditedBlocks(blocks => blocks.filter(block => block.id !== blockId));
+                const blockToRemove = blogBlocks.find(b => b.id === blockId);
+                if (blockToRemove) {
+                  setBlogBlocks(blocks => blocks.filter(block => block.id !== blockId));
+                  setEditedBlocks(blocks => blocks.filter(block => block.id !== blockId));
+                  setSelectedBlockTypes(prev => 
+                    prev.filter(b => b.id !== blockToRemove.type)
+                  );
+                }
               }}
               onReorderBlocks={(newBlocks) => {
                 setBlogBlocks(newBlocks);
@@ -286,6 +323,11 @@ export default function Home() {
                   const editedBlock = editedBlocks.find(eb => eb.id === block.id);
                   return editedBlock || block;
                 }));
+                // Update selectedBlockTypes order to match new block order
+                const newSelectedTypes = newBlocks
+                  .map(block => availableBlocks.find(b => b.id === block.type))
+                  .filter((b): b is TBlogBlock => b !== undefined);
+                setSelectedBlockTypes(newSelectedTypes);
               }}
             />
           )}

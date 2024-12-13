@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { BlogBlock } from "@/lib/types";
 import { ImageBlock } from "./blocks/image-block";
 import { useToast } from "@/hooks/use-toast";
+import { formatMarkdown } from "@/lib/markdown";
 
 interface BlogPreviewProps {
   blocks: BlogBlock[];
@@ -34,12 +35,12 @@ export function BlogPreview({
   }, [blocks, title]);
 
   useEffect(() => {
-    // Handle Cmd/Ctrl + S
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 's') {
         e.preventDefault();
         if (hasChanges && onSave) {
-          handleSave();
+          onSave();
+          setHasChanges(false);
         }
       }
     };
@@ -64,11 +65,11 @@ export function BlogPreview({
     setHasChanges(true);
   };
 
-  const handleSave = () => {
-    if (onSave) {
-      onSave();
+  const renderContent = (content: string) => {
+    if (content.trim().startsWith('<')) {
+      return content;
     }
-    setHasChanges(false);
+    return formatMarkdown(content);
   };
 
   return (
@@ -103,7 +104,7 @@ export function BlogPreview({
             {block.type === 'image' ? (
               <ImageBlock
                 block={block}
-                onUpdate={(content, imageUrl) => {
+                onUpdate={(id, content, imageUrl) => {
                   handleContentChange(block.id, content, imageUrl);
                 }}
               />
@@ -111,7 +112,9 @@ export function BlogPreview({
               <div
                 contentEditable
                 className="prose prose-neutral dark:prose-invert max-w-none outline-none border-l-2 border-transparent focus:border-primary transition-colors pl-4"
-                dangerouslySetInnerHTML={{ __html: block.content }}
+                dangerouslySetInnerHTML={{ 
+                  __html: renderContent(block.content)
+                }}
                 onBlur={(e) => {
                   const newContent = e.currentTarget.innerHTML;
                   if (newContent !== block.content) {

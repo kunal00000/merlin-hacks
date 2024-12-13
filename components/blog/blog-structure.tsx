@@ -1,8 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Check, Plus } from 'lucide-react';
 import { BlogBlock, blocks as availableBlocks } from '@/lib/types';
+import { cn } from '@/lib/utils';
 import {
   Dialog,
   DialogContent,
@@ -26,7 +26,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
-import { cn } from '@/lib/utils';
+import { Plus, Check } from 'lucide-react';
 
 interface BlogStructureProps {
   blocks: BlogBlock[];
