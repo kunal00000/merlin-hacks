@@ -10,7 +10,7 @@ export function formatMarkdown(content: string): string {
       .replace(/^###### (.*$)/gm, '<h6>$1</h6>')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/^\* (.*$)/gm, '<li>$1</li>')
-      .replace(/((?:<li>.*?<\/li>\n?)+)/gs, '<ul>$1</ul>')
+      .replace(/((?:<li>.*?<\/li>\n?)+)/g, '<ul>$1</ul>')
       .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-primary hover:underline">$1</a>')
       .split('\n\n')
       .map(p => p.trim() ? `<p>${p}</p>` : '')
