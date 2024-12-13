@@ -1,53 +1,9 @@
 import { NextRequest } from 'next/server';
-import { contentBlockSchema } from './schema';
+import { contentBlockSchema } from "@/lib/schema";
 import { TBlogBlock } from '@/lib/types';
+import { createPrompt } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
-
-function createPrompt(
-  userMessage: string,
-  blogType: string,
-  internalLinks: string[],
-  selectedBlocks: TBlogBlock[]
-) {
-  // Now we have access to the block prompts
-  const blockInstructions = selectedBlocks
-    .map((block) => `[${block.name}]: ${block.prompt}`)
-    .join('\n');
-
-  const linksInstruction = internalLinks.length > 0
-    ? `\nInternal Links to Include (use descriptive anchor text):\n${internalLinks.map(link => `- ${link}`).join('\n')}`
-    : '';
-
-  return `Create a comprehensive ${blogType} with these requirements:
-
-Main Topic/Keywords: ${userMessage}
-
-Content Structure:
-${blockInstructions}
-${linksInstruction}
-
-SEO Requirements:
-- Include main keywords naturally in the first 100 words
-- Use LSI (Latent Semantic Indexing) keywords throughout
-- Create a compelling H1 title (use markdown # syntax)
-- Use markdown ## to ###### for subheadings hierarchically
-- Include keywords naturally in subheadings
-- Use **bold** for emphasis on key terms
-- Use bullet points for better scanability
-- Keep paragraphs short (3-4 sentences max)
-- Ensure natural keyword placement
-- Generate a URL-friendly slug
-
-Format the response as a JSON object with:
-- title: SEO-optimized title
-- slug: URL-friendly version of title
-- blocks: Array of content blocks matching the structure
-- metadata: Including keywords, description, and estimated reading time
-
-Write in a clear, engaging style that maintains reader interest while naturally incorporating SEO elements.`;
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -82,10 +38,7 @@ export async function POST(request: NextRequest) {
 
     const validatedResponse = contentBlockSchema.parse(simulatedResponse);
 
-    return new Response(JSON.stringify(validatedResponse), {
-      headers: { 'Content-Type': 'application/json' }
-    });
-
+    return new Response(JSON.stringify(validatedResponse), { status: 200 });
   } catch (error) {
     console.error('Blog generation error:', error);
     return new Response(

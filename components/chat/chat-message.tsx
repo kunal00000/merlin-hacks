@@ -17,7 +17,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
     >
       {message.role === "assistant" && (
         <Avatar className="h-8 w-8">
-          <AvatarImage src="/merlin-avatar.png" alt="Merlin" />
+          {/* <AvatarImage src="/merlin-avatar.png" alt="Merlin" /> */}
         </Avatar>
       )}
       <Card
