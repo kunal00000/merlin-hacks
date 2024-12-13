@@ -130,7 +130,7 @@ export const blocks: TBlogBlock[] = [
     name: 'Image',
     icon: ImageIcon,
     color: 'orange',
-    prompt: 'Add an image section to your blog post.',
+    prompt: 'Create a caption for generating image considering nearby blocks.',
     reusable: true,
   },
   {

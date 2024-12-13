@@ -98,12 +98,12 @@ export function BlogStructure({
         <DialogTrigger asChild>
           <Button variant="outline" className="w-full mt-4">
             <Plus className="h-4 w-4 mr-2" />
-            Add Section
+            Add Blocks
           </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Section</DialogTitle>
+            <DialogTitle>Add Block</DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-2">
             {availableBlocks.map((block) => (
