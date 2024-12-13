@@ -16,12 +16,12 @@ interface BlogPreviewProps {
   onSave?: () => void;
 }
 
-export function BlogPreview({ 
-  blocks, 
-  title, 
+export function BlogPreview({
+  blocks,
+  title,
   onUpdateBlock,
   onUpdateTitle,
-  onSave 
+  onSave
 }: BlogPreviewProps) {
   const [localBlocks, setLocalBlocks] = useState(blocks);
   const [localTitle, setLocalTitle] = useState(title);
@@ -84,7 +84,7 @@ export function BlogPreview({
           }
         }}
       />
-      
+
       <div className="flex items-center gap-2 text-muted-foreground mb-8">
         <Avatar className="h-6 w-6">
           <AvatarImage src="/user-avatar.png" alt="Author" />
@@ -95,27 +95,32 @@ export function BlogPreview({
       </div>
 
       {localBlocks.map((block) => (
-        <div key={block.id} className="mb-8">
-          {block.type === 'image' ? (
-            <ImageBlock
-              block={block}
-              onUpdate={(content, imageUrl) => {
-                handleContentChange(block.id, content, imageUrl);
-              }}
-            />
-          ) : (
-            <div
-              contentEditable
-              className="prose prose-neutral dark:prose-invert max-w-none outline-none border-l-2 border-transparent focus:border-primary transition-colors pl-4"
-              dangerouslySetInnerHTML={{ __html: block.content }}
-              onBlur={(e) => {
-                const newContent = e.currentTarget.innerHTML;
-                if (newContent !== block.content) {
-                  handleContentChange(block.id, newContent);
-                }
-              }}
-            />
-          )}
+        <div key={block.id} className="mb-4">
+          <p className="text-gray-300 italic font-semibold text-sm">
+            {block.type}
+          </p>
+          <div>
+            {block.type === 'image' ? (
+              <ImageBlock
+                block={block}
+                onUpdate={(content, imageUrl) => {
+                  handleContentChange(block.id, content, imageUrl);
+                }}
+              />
+            ) : (
+              <div
+                contentEditable
+                className="prose prose-neutral dark:prose-invert max-w-none outline-none border-l-2 border-transparent focus:border-primary transition-colors pl-4"
+                dangerouslySetInnerHTML={{ __html: block.content }}
+                onBlur={(e) => {
+                  const newContent = e.currentTarget.innerHTML;
+                  if (newContent !== block.content) {
+                    handleContentChange(block.id, newContent);
+                  }
+                }}
+              />
+            )}
+          </div>
         </div>
       ))}
     </div>

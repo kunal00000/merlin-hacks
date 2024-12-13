@@ -35,7 +35,7 @@ export function BlogStructureItem({ block, onRemove }: BlogStructureItemProps) {
       ref={setNodeRef}
       style={style}
       className={cn(
-        'flex items-center gap-2 p-2 rounded-lg mb-2 group relative',
+        'flex items-center gap-2 px-2 pl-4 py-1 rounded-lg mb-2 group relative',
         `border-2 bg-${blockConfig?.color}-300/10 text-${blockConfig?.color}-600 border-${blockConfig?.color}-100 dark:border-${blockConfig?.color}-900`
       )}
     >
