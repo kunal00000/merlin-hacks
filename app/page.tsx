@@ -14,10 +14,8 @@ export default function Home() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [blogBlocks, setBlogBlocks] = useState<BlogBlock[]>([]);
-  const [previewMode, setPreviewMode] = useState<"preview" | "structure">("preview");
-  const [blogTitle, setBlogTitle] = useState(
-    "The Impact of Technology on the Workplace: How Technology is Changing"
-  );
+  const [previewMode, setPreviewMode] = useState<"preview" | "structure">("structure");
+  const [blogTitle, setBlogTitle] = useState("");
 
   const handleSendMessage = () => {
     if (!message.trim()) return;

@@ -27,13 +27,6 @@ export function BlogHeader({ previewMode, setPreviewMode }: BlogHeaderProps) {
           Structure
         </Button>
       </div>
-      <div className="flex gap-2">
-        <Button variant="outline" size="sm">
-          <Share2 className="h-4 w-4 mr-2" />
-          Share
-        </Button>
-        <Button size="sm">Publish this version</Button>
-      </div>
     </header>
   );
 }
