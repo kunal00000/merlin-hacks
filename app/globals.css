@@ -80,3 +80,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+.prose a {
+  @apply text-blue-600 hover:underline hover:text-blue-800;
+}

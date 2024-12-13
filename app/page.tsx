@@ -149,7 +149,7 @@ export default function Home() {
 
       const generatedBlocks = data.blocks.map((block, index) => ({
         ...block,
-        id: block.id || `${block.type}-${index}`,
+        id: `${block.type}-${index}`,
       }));
 
       setBlogBlocks(generatedBlocks);
@@ -160,7 +160,6 @@ export default function Home() {
 
       toast({
         title: "Blog Generated Successfully",
-        description: `Reading time: ${data.metadata.readingTime} minutes`,
       });
 
     } catch (error) {

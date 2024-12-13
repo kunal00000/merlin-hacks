@@ -28,7 +28,7 @@ export function ChatInput({
     <div className="p-4 border-t border-border">
       <div className="flex gap-2">
         <Input
-          placeholder="Type your message..."
+          placeholder="Write a blog on..."
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyPress={(e) => e.key === "Enter" && handleSend()}

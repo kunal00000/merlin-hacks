@@ -21,7 +21,7 @@ export function createPrompt(
     ? `\nInternal Links to Include (use descriptive anchor text):\n${internalLinks.map(link => `- ${link}`).join('\n')}`
     : '';
 
-  return `Create a comprehensive ${blogType} with these requirements:
+  return `Create a ${blogType} with these requirements:
 
 Main Topic/Keywords: ${userMessage}
 
@@ -32,7 +32,6 @@ ${linksInstruction}
 SEO Requirements:
 - Include main keywords naturally in the first 100 words
 - Use LSI (Latent Semantic Indexing) keywords throughout
-- Create a compelling H1 title (use markdown # syntax)
 - Use markdown ## to ###### for subheadings hierarchically
 - Include keywords naturally in subheadings
 - Use **bold** for emphasis on key terms

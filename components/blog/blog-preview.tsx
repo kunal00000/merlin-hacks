@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
 import { BlogBlock } from "@/lib/types";
 import { ImageBlock } from "./blocks/image-block";
-import { useToast } from "@/hooks/use-toast";
 import { formatMarkdown } from "@/lib/markdown";
+import { UserCircleIcon } from "lucide-react";
 
 interface BlogPreviewProps {
   blocks: BlogBlock[];
@@ -22,12 +21,11 @@ export function BlogPreview({
   title,
   onUpdateBlock,
   onUpdateTitle,
-  onSave
+  onSave,
 }: BlogPreviewProps) {
   const [localBlocks, setLocalBlocks] = useState(blocks);
   const [localTitle, setLocalTitle] = useState(title);
   const [hasChanges, setHasChanges] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     setLocalBlocks(blocks);
@@ -36,7 +34,7 @@ export function BlogPreview({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
         e.preventDefault();
         if (hasChanges && onSave) {
           onSave();
@@ -45,13 +43,17 @@ export function BlogPreview({
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [hasChanges, onSave]);
 
-  const handleContentChange = (id: string, content: string, imageUrl?: string) => {
-    setLocalBlocks(prevBlocks =>
-      prevBlocks.map(block =>
+  const handleContentChange = (
+    id: string,
+    content: string,
+    imageUrl?: string
+  ) => {
+    setLocalBlocks((prevBlocks) =>
+      prevBlocks.map((block) =>
         block.id === id ? { ...block, content } : block
       )
     );
@@ -66,7 +68,7 @@ export function BlogPreview({
   };
 
   const renderContent = (content: string) => {
-    if (content.trim().startsWith('<')) {
+    if (content.trim().startsWith("<")) {
       return content;
     }
     return formatMarkdown(content);
@@ -87,21 +89,16 @@ export function BlogPreview({
       />
 
       <div className="flex items-center gap-2 text-muted-foreground mb-8">
-        <Avatar className="h-6 w-6">
-          <AvatarImage src="/user-avatar.png" alt="Author" />
-        </Avatar>
-        <span>Author</span>
+        <UserCircleIcon className="h-6 w-6 stroke-orange-300" />
+        <span>Kunal Verma</span>
         <Separator orientation="vertical" className="h-4" />
         <span>{format(new Date(), "MMMM d, yyyy")}</span>
       </div>
 
       {localBlocks.map((block) => (
         <div key={block.id} className="mb-4">
-          <p className="text-gray-300 italic font-semibold text-sm">
-            {block.type}
-          </p>
           <div>
-            {block.type === 'image' ? (
+            {block.type === "image" ? (
               <ImageBlock
                 block={block}
                 onUpdate={(id, content, imageUrl) => {
@@ -112,8 +109,18 @@ export function BlogPreview({
               <div
                 contentEditable
                 className="prose prose-neutral dark:prose-invert max-w-none outline-none border-l-2 border-transparent focus:border-primary transition-colors pl-4"
-                dangerouslySetInnerHTML={{ 
-                  __html: renderContent(block.content)
+                dangerouslySetInnerHTML={{
+                  __html: renderContent(block.content),
+                }}
+                onClick={(e) => {
+                  const target = e.target as HTMLElement;
+                  if (target.tagName === 'A') {
+                    const href = (target as HTMLAnchorElement).href;
+                    if (href) {
+                      window.open(href, '_blank'); // Open the link in a new tab
+                      e.preventDefault(); // Prevent contentEditable from interfering
+                    }
+                  }
                 }}
                 onBlur={(e) => {
                   const newContent = e.currentTarget.innerHTML;

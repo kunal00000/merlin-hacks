@@ -3,6 +3,7 @@
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Message } from "@/lib/types";
+import { UserCircleIcon } from "lucide-react";
 
 interface ChatMessageProps {
   message: Message;
@@ -16,21 +17,17 @@ export function ChatMessage({ message }: ChatMessageProps) {
       }`}
     >
       {message.role === "assistant" && (
-        <Avatar className="h-8 w-8">
-          {/* <AvatarImage src="/merlin-avatar.png" alt="Merlin" /> */}
-        </Avatar>
+         <UserCircleIcon className="h-6 w-6 fill-accent stroke-gray-400" />
       )}
       <Card
-        className={`p-3 max-w-[80%] ${
-          message.role === "user" ? "bg-primary text-primary-foreground" : ""
+        className={`py-2 px-4 max-w-[80%] rounded-xl ${
+          message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
         }`}
       >
         {message.content}
       </Card>
       {message.role === "user" && (
-        <Avatar className="h-8 w-8 bg-primary">
-          <AvatarImage src="/user-avatar.png" alt="User" />
-        </Avatar>
+         <UserCircleIcon className="h-6 w-6 fill-accent stroke-gray-400" />
       )}
     </div>
   );

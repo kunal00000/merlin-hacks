@@ -5,31 +5,10 @@ export const contentBlockSchema = z.object({
   slug: z.string().describe("URL-friendly slug"),
   blocks: z.array(
     z.object({
-      type: z.string().describe('Type of the block'),
-      content: z.string().describe('Content of the block'),
-      imageUrl: z.string().optional().describe('URL for image blocks')
+      type: z.string().describe('Block id in format personal-story, hook, call-to-action, etc.'),
+      content: z.string().describe('Content of the block may or may not have subheadings for block content in markdown format'),
     })
   ),
-  metadata: z.object({
-    keywords: z.array(z.string()),
-    description: z.string(),
-    readingTime: z.number()
-  })
 });
 
 export type GeneratedContent = z.infer<typeof contentBlockSchema>;
-
-
-// import { z } from 'zod';
-
-// export const contentBlockSchema = z.object({
-//     title: z.string().describe("Title for blog"),
-//     contentBlocks: z.array(
-//         z.object({
-//             blockName: z.string().describe('Name of a block for blog.'),
-//             content: z
-//                 .string()
-//                 .describe('Content of blog for this particular block or caption of image if image block.'),
-//         })
-//     ),
-// });

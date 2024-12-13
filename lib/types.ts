@@ -29,14 +29,7 @@ export interface GenerateResponse {
   blocks: Array<{
     type: string;
     content: string;
-    imageUrl?: string;
-    id?: string;
   }>;
-  metadata: {
-    keywords: string[];
-    description: string;
-    readingTime: number;
-  };
 }
 
 export interface BlogBlock {
