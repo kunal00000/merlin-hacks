@@ -30,7 +30,8 @@ export async function POST(request: NextRequest) {
 
     const result = streamObject({
       // model: anthropic("claude-3-5-sonnet-latest"),
-      model: google("gemini-2.0-flash-exp"),
+      model: google("gemini-1.5-flash-latest"),
+      // model: google("gemini-2.0-flash-exp"),
       schema: contentBlockSchema,
       prompt,
     });

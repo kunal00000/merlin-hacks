@@ -19,7 +19,6 @@ export function BlogHeader({
 }: BlogHeaderProps) {
   return (
     <header className="p-2.5 border-b border-border flex items-center justify-between">
-      {onSave && (
         <Button 
           variant="outline" 
           size="sm"
@@ -29,7 +28,6 @@ export function BlogHeader({
           <Save className="h-4 w-4 mr-2" />
           Save
         </Button>
-      )}
       
       <Tabs 
         value={previewMode} 

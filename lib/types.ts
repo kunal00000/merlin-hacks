@@ -141,14 +141,14 @@ export const blocks: TBlogBlock[] = [
     disabled: true,
     prompt: 'Wrap up the blog with a powerful, memorable closing statement.',
   },
-  {
-    id: 'image',
-    name: 'Image',
-    icon: ImageIcon,
-    color: 'orange',
-    prompt: 'Create a caption for generating image considering nearby blocks.',
-    reusable: true,
-  },
+  // {
+  //   id: 'image',
+  //   name: 'Image',
+  //   icon: ImageIcon,
+  //   color: 'orange',
+  //   prompt: 'Create a caption for generating image considering nearby blocks.',
+  //   reusable: true,
+  // },
   {
     id: 'resource',
     name: 'Resource',

@@ -14,10 +14,8 @@ import { BlogTypeSelector } from "@/components/chat/blog-type-selector";
 import { MultiInput } from "@/components/chat/multi-input";
 import { Button } from "@/components/ui/button";
 import { saveToStorage, loadFromStorage } from "@/lib/storage";
-import { experimental_useObject as useObject } from "ai/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2 } from "lucide-react";
-import { contentBlockSchema } from "@/lib/schema";
 
 type Step = 'initial' | 'blogType' | 'internalLinks' | 'structure' | 'generating';
 
@@ -34,86 +32,34 @@ export default function Home() {
   const [internalLinks, setInternalLinks] = useState<string[]>([]);
   const [currentStep, setCurrentStep] = useState<Step>('initial');
   const [initialPrompt, setInitialPrompt] = useState("");
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
   const { toast } = useToast();
 
-  const {
-    object: generatedContent,
-    isLoading,
-    submit,
-    error
-  } = useObject({
-    api: '/api/generate',
-    id: 'blog-content',
-    schema: contentBlockSchema
-  });
-
-  // Effect to handle generated content updates
-  useEffect(() => {
-    if (generatedContent && !isLoading) {
-      try {
-        setBlogTitle(generatedContent.title || "");
-        setEditedTitle(generatedContent.title || "");
-
-        const newBlocks = generatedContent.blocks?.map((block, index) => ({
-          id: `${block?.type}-${Date.now()}-${index}`,
-          ...block
-        }));
-
-        setBlogBlocks(newBlocks);
-        setEditedBlocks(newBlocks);
-        setPreviewMode("preview");
-        
-        addMessage('assistant', "I've generated your blog content based on your requirements. You can view and edit it in the preview section.");
-
-        toast({
-          title: "Blog Generated Successfully",
-          description: "Your blog content is ready for review and editing."
-        });
-      } catch (e) {
-        console.error('Error processing generated content:', e);
-        toast({
-          title: "Processing Error",
-          description: "Failed to process the generated content. Please try again.",
-          variant: "destructive"
-        });
-      }
-    }
-  }, [generatedContent, isLoading]);
-
-  // Effect to handle errors
-  useEffect(() => {
-    if (error) {
-      console.error('Generation error:', error);
-      toast({
-        title: "Generation Failed",
-        description: error.message || "Failed to generate blog content. Please try again.",
-        variant: "destructive"
-      });
-      addMessage('assistant', "Sorry, I encountered an error while generating the blog content. Please try again.");
-    }
-  }, [error, toast]);
-
+  // Load saved state
   useEffect(() => {
     const savedState = loadFromStorage();
-    setMessages(savedState.messages);
-    setBlogBlocks(savedState.blogBlocks);
-    setEditedBlocks(savedState.editedBlocks || savedState.blogBlocks);
-    setBlogTitle(savedState.blogTitle);
-    setEditedTitle(savedState.editedTitle || savedState.blogTitle);
-    setSelectedBlogType(savedState.selectedBlogType);
-    setInternalLinks(savedState.internalLinks);
-    setCurrentStep(savedState.currentStep as Step);
-    setInitialPrompt(savedState.initialPrompt);
+    if (!savedState) return;
+
+    setMessages(savedState.messages || []);
+    setBlogBlocks(savedState.blogBlocks || []);
+    setEditedBlocks(savedState.editedBlocks || savedState.blogBlocks || []);
+    setBlogTitle(savedState.blogTitle || "");
+    setEditedTitle(savedState.editedTitle || savedState.blogTitle || "");
+    setSelectedBlogType(savedState.selectedBlogType || null);
+    setInternalLinks(savedState.internalLinks || []);
+    setCurrentStep(savedState.currentStep as Step || 'initial');
+    setInitialPrompt(savedState.initialPrompt || "");
     
-    const savedBlockTypes = savedState.blogBlocks.map(block => 
+    const savedBlockTypes = (savedState.blogBlocks || []).map(block => 
       availableBlocks.find(b => b.id === block.type)
     ).filter((b): b is TBlogBlock => b !== undefined);
     setSelectedBlockTypes(savedBlockTypes);
   }, []);
 
+  // Save state changes
   useEffect(() => {
-    saveToStorage({
+    const state = {
       messages,
       blogBlocks,
       editedBlocks,
@@ -123,7 +69,8 @@ export default function Home() {
       internalLinks,
       currentStep,
       initialPrompt,
-    });
+    };
+    saveToStorage(state);
   }, [messages, blogBlocks, editedBlocks, blogTitle, editedTitle, selectedBlogType, internalLinks, currentStep, initialPrompt]);
 
   const addMessage = (role: 'user' | 'assistant', content: string) => {
@@ -174,15 +121,52 @@ export default function Home() {
       return;
     }
 
+    setIsLoading(true);
     setCurrentStep('generating');
     addMessage('user', "Generate blog with the selected structure");
 
     try {
-      await submit({
-        userMessage: initialPrompt,
-        blogType: selectedBlogType,
-        internalLinks,
-        selectedBlocks: selectedBlockTypes
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userMessage: initialPrompt,
+          blogType: selectedBlogType,
+          internalLinks,
+          selectedBlocks: selectedBlockTypes
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate blog content');
+      }
+
+      const data = await response.json();
+
+      if (!data.title || !data.blocks) {
+        throw new Error('Invalid response format');
+      }
+
+      setBlogTitle(data.title);
+      setEditedTitle(data.title);
+
+      const generatedBlocks = data.blocks.map((block: any, index: number) => ({
+        id: `${block.type}-${Date.now()}-${index}`,
+        ...block
+      }));
+
+      setBlogBlocks(generatedBlocks);
+      setEditedBlocks(generatedBlocks);
+      setPreviewMode("preview");
+      setIsDirty(false);
+      
+      addMessage('assistant', "I've generated your blog content based on your requirements. You can view and edit it in the preview section.");
+
+      toast({
+        title: "Blog Generated Successfully",
+        description: "Your blog content is ready for review and editing."
       });
     } catch (error) {
       console.error('Error generating blog:', error);
@@ -191,27 +175,39 @@ export default function Home() {
         description: "Failed to generate blog content. Please try again.",
         variant: "destructive"
       });
+      addMessage('assistant', "Sorry, I encountered an error while generating the blog content. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSaveContent = () => {
-    if (!hasUnsavedChanges) return;
+    if (!isDirty) return;
 
-    setBlogBlocks(editedBlocks);
-    setBlogTitle(editedTitle);
-    setHasUnsavedChanges(false);
-    
-    saveToStorage({
-      blogBlocks: editedBlocks,
-      editedBlocks,
-      blogTitle: editedTitle,
-      editedTitle,
-    });
-    
-    toast({
-      title: "Changes Saved",
-      description: "Your blog content has been saved successfully.",
-    });
+    try {
+      setBlogBlocks([...editedBlocks]);
+      setBlogTitle(editedTitle);
+      setIsDirty(false);
+      
+      saveToStorage({
+        blogBlocks: editedBlocks,
+        editedBlocks,
+        blogTitle: editedTitle,
+        editedTitle,
+      });
+      
+      toast({
+        title: "Changes Saved",
+        description: "Your blog content has been saved successfully.",
+      });
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      toast({
+        title: "Save Failed",
+        description: "Failed to save changes. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleUpdateBlock = (id: string, content: string, imageUrl?: string) => {
@@ -222,12 +218,12 @@ export default function Home() {
           : block
       )
     );
-    setHasUnsavedChanges(true);
+    setIsDirty(true);
   };
 
   const handleUpdateTitle = (newTitle: string) => {
     setEditedTitle(newTitle);
-    setHasUnsavedChanges(true);
+    setIsDirty(true);
   };
 
   const renderInputSection = () => {
@@ -349,8 +345,8 @@ export default function Home() {
         <BlogHeader 
           previewMode={previewMode} 
           setPreviewMode={setPreviewMode}
-          onSave={previewMode === "preview" && hasUnsavedChanges ? handleSaveContent : undefined}
-          hasChanges={hasUnsavedChanges}
+          onSave={previewMode === "preview" && isDirty ? handleSaveContent : undefined}
+          hasChanges={isDirty}
         />
         <ScrollArea className="flex-1 p-4">
           <AnimatePresence mode="wait">
