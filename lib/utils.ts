@@ -23,22 +23,31 @@ export function createPrompt(
 
   return `Create a ${blogType} with these requirements:
 
-Main Topic/Keywords: ${userMessage}
+Main Topic/Keywords/User Intent for blog generation: ${userMessage}
 
 Content Structure:
 ${blockInstructions}
 ${linksInstruction}
 
-SEO Requirements:
-- Include main keywords naturally in the first 100 words
+Requirements:
+- Ensure main keywords placement naturally in the first 100 words
 - Use LSI (Latent Semantic Indexing) keywords throughout
 - Use markdown ## to ###### for subheadings hierarchically
-- Include keywords naturally in subheadings
+- Use >> for quotes (testimonials, inspiration quotes, etc.)
+- Include subheadings for better readability
 - Use **bold** for emphasis on key terms
 - Use bullet points for better scanability
 - Keep paragraphs short (3-4 sentences max)
-- Ensure natural keyword placement
-- Generate a URL-friendly slug
+- Use the selected blocks in the order provided
+- Ensure smooth transitions between blocks
+- Write in a conversational, engaging style
+- Provide actionable insights
+- Use tables or lists where applicable
+- Aim for 800-1200 words
+- Use markdown for formatting
+- Include clear relevant headings for each section
+- Make sure to separate sections with newlines
+${internalLinks.length > 0 ? '- Naturally incorporate the provided internal links where relevant' : ''}
 
 Format the response as a JSON object with:
 - title: SEO-optimized title
@@ -46,5 +55,5 @@ Format the response as a JSON object with:
 - blocks: Array of content blocks matching the structure
 - metadata: Including keywords, description, and estimated reading time
 
-Write in a clear, engaging style that maintains reader interest while naturally incorporating SEO elements.`;
+  Write the blog post now:`;
 }

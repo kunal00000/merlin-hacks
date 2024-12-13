@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
 import { contentBlockSchema } from "@/lib/schema";
-import { google } from '@ai-sdk/google';
-import { streamObject } from 'ai';
+import { google } from "@ai-sdk/google";
+import { anthropic } from "@ai-sdk/anthropic";
+import { streamObject } from "ai";
 import { createPrompt } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -28,6 +29,7 @@ export async function POST(request: NextRequest) {
     );
 
     const result = streamObject({
+      // model: anthropic("claude-3-5-sonnet-latest"),
       model: google("gemini-2.0-flash-exp"),
       schema: contentBlockSchema,
       prompt,
